@@ -109,18 +109,17 @@ class Svg extends ImageProvider<SvgImageKey> {
 
   static Future<ImageInfo> _loadAsync(SvgImageKey key) async {
     final String rawSvg = await _getSvgString(key);
-    final DrawableRoot svgRoot = await svg.fromSvgString(rawSvg, key.path);
-    final ui.Picture picture = svgRoot.toPicture(
-      size: Size(
-        key.pixelWidth.toDouble(),
-        key.pixelHeight.toDouble(),
+    final PictureInfo svgRoot = await vg.loadPicture(
+      SvgStringLoader(
+        rawSvg,
+        theme: SvgTheme(
+          currentColor: getFilterColor(key.color),
+        ),
       ),
-      clipToViewBox: false,
-      colorFilter: ColorFilter.mode(
-        getFilterColor(key.color),
-        BlendMode.srcATop,
-      ),
+      null,
+      clipViewbox: false,
     );
+    final ui.Picture picture = svgRoot.picture;
     final ui.Image image = await picture.toImage(
       key.pixelWidth,
       key.pixelHeight,
