@@ -3,6 +3,7 @@ library flutter_svg_provider;
 import 'dart:io';
 import 'dart:async';
 import 'dart:ui' as ui show Image, Picture;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -117,13 +118,17 @@ class Svg extends ImageProvider<SvgImageKey> {
         ),
       ),
       null,
-      clipViewbox: false,
     );
-    final ui.Picture picture = svgRoot.picture;
-    final ui.Image image = await picture.toImage(
-      key.pixelWidth,
-      key.pixelHeight,
-    );
+
+    final PictureRecorder recorder = PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+
+    canvas.scale(key.pixelWidth / svgRoot.size.width,
+        key.pixelHeight / svgRoot.size.height);
+    canvas.drawPicture(svgRoot.picture);
+    final ui.Picture scaledPicture = recorder.endRecording();
+
+    final image = await scaledPicture.toImage(key.pixelWidth, key.pixelHeight);
 
     return ImageInfo(
       image: image,
